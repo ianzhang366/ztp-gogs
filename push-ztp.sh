@@ -18,6 +18,6 @@ git remote add origin-gogs https://${GIT_HOSTNAME}/testadmin/${REPO_NAME}.git
 git remote -v
 
 git checkout scale-lab
-git -c http.sslVerify=false push -u origin-gogs scale-lab:main
+git -c http.sslVerify=false push -u origin-gogs scale-lab:scale-lab
 
 exit 0
