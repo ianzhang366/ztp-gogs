@@ -1,8 +1,9 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: gogs-admin-user
-  namespace: default
+  namespace: INSTALL_NAMESPACE
 data:
   adduser.sh: |
     #!/bin/bash
@@ -12,7 +13,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: gogs-config
-  namespace: default
+  namespace: INSTALL_NAMESPACE
 data:
   app.ini: |
     APP_NAME = Gogs
@@ -70,7 +71,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gogs
-  namespace: default
+  namespace: INSTALL_NAMESPACE
 spec:
   replicas: 1
   selector:
@@ -84,7 +85,7 @@ spec:
     spec:
       containers:
       - name: gogs
-        image: gogs/gogs:0.12.1
+        image: GOGS_IMAGE
         ports:
         - containerPort: 3000
           name: http
@@ -97,7 +98,7 @@ spec:
         - name: gogs-config-volume
           mountPath: /data/gogs/conf
         - name: admin-user-add-script-volume
-          mountPath: /tmp         
+          mountPath: /tmp
       volumes:
         - name: gogs-config-volume
           configMap:
@@ -111,7 +112,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: gogs-svc
-  namespace: default
+  namespace: INSTALL_NAMESPACE
 spec:
   type: ClusterIP
   selector:
@@ -126,7 +127,7 @@ apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
   name: gogs-svc
-  namespace: default
+  namespace: INSTALL_NAMESPACE
 spec:
   path: /
   port:
