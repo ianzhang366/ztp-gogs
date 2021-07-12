@@ -155,4 +155,3 @@ if [ ${RESPONSE} -eq 500 ] || [ ${RESPONSE} -eq 501 ] || [ ${RESPONSE} -eq 502 ]
         exit 1
     fi
 fi
-
