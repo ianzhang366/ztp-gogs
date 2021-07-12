@@ -5,22 +5,17 @@ echo "==== Deploying Gogs Git server with custom certificate ===="
 cur_dir=$(pwd)
 echo "Current directory is $cur_dir"
 
-kubeconfig=$HUB_CONFIG
+kubeconfig="/root/bm/kubeconfig"
 
 KUBECTL_CMD="oc --kubeconfig $kubeconfig --insecure-skip-tls-verify=true"
 
-GOGS_IMAGE="gogs/gogs:0.12.1"
+GOGS_IMAGE="f36-h21-000-r640.rdu2.scalelab.redhat.com:5000/gogs/gogs:0.12.1"
+
 OVERRIDE_GOGS="override-gogs.yaml"
 INSTALL_NAMESPACE="default"
 
 # Get the application domain
-APP_DOMAIN=$($KUBECTL_CMD -n openshift-console get routes console -o jsonpath='{.status.ingress[0].routerCanonicalHostname}')
-if [ $? -ne 0 ]; then
-    echo "failed to get the application domain"
-    echo "E2E CANARY TEST - EXIT WITH ERROR"
-    exit 1
-fi
-
+APP_DOMAIN="apps.bm.rdu2.scalelab.redhat.com"
 echo "Application domain is $APP_DOMAIN"
 
 GIT_HOSTNAME=gogs-svc-default.$APP_DOMAIN
@@ -116,7 +111,6 @@ $KUBECTL_CMD get route gogs-svc -n $INSTALL_NAMESPACE -o yaml
 
 # Populate the repo with test data
 
-GIT_HOSTNAME="gogs-svc-default.apps.izhang-hub-47-6np2g.dev10.red-chesterfield.com"
 curl -u testadmin:testadmin -X POST -H "content-type: application/json" -d '{"name": "ztp-ran-manifests", "description": "test repo", "private": false}' --write-out %{http_code} --silent --output /dev/null https://${GIT_HOSTNAME}/api/v1/admin/users/testadmin/repos --insecure
 
 # Create a test Git repository. This creates a repo named testrepo under user testadmin.
@@ -162,18 +156,3 @@ if [ ${RESPONSE} -eq 500 ] || [ ${RESPONSE} -eq 501 ] || [ ${RESPONSE} -eq 502 ]
     fi
 fi
 
-REPO_NAME="ztp-ran-manifests"
-TARGET_REPO="${cur_dir}/${REPO_NAME}"
-cd ${cur_dir}
-
-git clone https://github.com/TheRealHaoLiu/ztp-ran-manifests.git
-
-cd $TARGET_REPO
-
-git remote add origin-gogs https://${GIT_HOSTNAME}/testadmin/${REPO_NAME}.git
-git remote -v
-
-git checkout main
-git push -u origin-gogs main
-
-exit 0

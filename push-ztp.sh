@@ -2,7 +2,7 @@
 
 cur_dir=$(pwd)
 
-GIT_HOSTNAME="gogs-svc-default.router-default.apps.bm.rdu2.scalelab.redhat.com"
+GIT_HOSTNAME="gogs-svc-default.apps.bm.rdu2.scalelab.redhat.com"
 REPO_NAME="ztp-ran-manifests"
 TARGET_REPO="${cur_dir}/${REPO_NAME}"
 
@@ -17,7 +17,7 @@ git remote rm origin-gogs
 git remote add origin-gogs https://${GIT_HOSTNAME}/testadmin/${REPO_NAME}.git
 git remote -v
 
-git checkout main
-git push -u origin-gogs main
+git checkout scale-lab
+git -c http.sslVerify=false push -u origin-gogs scale-lab:main
 
 exit 0

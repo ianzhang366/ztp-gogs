@@ -3,7 +3,7 @@
 cur_dir=$(pwd)
 echo "Current directory is $cur_dir"
 
-kubeconfig=$HUB_CONFIG
+kubeconfig="/root/bm/kubeconfig"
 
 KUBECTL_CMD="kubectl --kubeconfig $kubeconfig"
 
