@@ -4,6 +4,7 @@ cur_dir=$(pwd)
 echo "Current directory is $cur_dir"
 
 kubeconfig="/root/bm/kubeconfig"
+kubeconfig=$HUB_CONFIG
 
 KUBECTL_CMD="kubectl --kubeconfig $kubeconfig"
 

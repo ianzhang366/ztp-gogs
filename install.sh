@@ -6,16 +6,18 @@ cur_dir=$(pwd)
 echo "Current directory is $cur_dir"
 
 kubeconfig="/root/bm/kubeconfig"
+kubeconfig=$HUB_CONFIG
 
 KUBECTL_CMD="oc --kubeconfig $kubeconfig --insecure-skip-tls-verify=true"
 
 GOGS_IMAGE="f36-h21-000-r640.rdu2.scalelab.redhat.com:5000/gogs/gogs:0.12.1"
+GOGS_IMAGE="gogs/gogs:0.12.1"
 
 OVERRIDE_GOGS="override-gogs.yaml"
 INSTALL_NAMESPACE="default"
 
 # Get the application domain
-APP_DOMAIN="apps.bm.rdu2.scalelab.redhat.com"
+APP_DOMAIN="apps.izhang-hub-47-6np2g.dev10.red-chesterfield.com"
 echo "Application domain is $APP_DOMAIN"
 
 GIT_HOSTNAME=gogs-svc-default.$APP_DOMAIN
@@ -112,47 +114,3 @@ $KUBECTL_CMD get route gogs-svc -n $INSTALL_NAMESPACE -o yaml
 # Populate the repo with test data
 
 curl -u testadmin:testadmin -X POST -H "content-type: application/json" -d '{"name": "ztp-ran-manifests", "description": "test repo", "private": false}' --write-out %{http_code} --silent --output /dev/null https://${GIT_HOSTNAME}/api/v1/admin/users/testadmin/repos --insecure
-
-# Create a test Git repository. This creates a repo named testrepo under user testadmin.
-RESPONSE=$(curl -u testadmin:testadmin -X POST -H "content-type: application/json" -d '{"name": $REPO_NAME, "description": "test repo", "private": false}' --write-out %{http_code} --silent --output /dev/null https://${GIT_HOSTNAME}/api/v1/admin/users/testadmin/repos --insecure)
-if [ $? -ne 0 ]; then
-    echo "failed to create testrepo"
-    echo "E2E CANARY TEST - EXIT WITH ERROR"
-    exit 1
-fi
-
-echo "RESPONSE = ${RESPONSE}"
-
-if [ ${RESPONSE} -eq 500 ] || [ ${RESPONSE} -eq 501 ] || [ ${RESPONSE} -eq 502 ] || [ ${RESPONSE} -eq 503 ] || [ ${RESPONSE} -eq 504 ]; then
-    echo "Gog server error ${RESPONSE}"
-
-    DESC_POD=$($KUBECTL_CMD describe pod $GOGS_POD_NAME)
-    echo "$DESC_POD"
-
-    $KUBECTL_CMD logs $GOGS_POD_NAME -n default
-    echo
-
-    sleep 60
-
-    echo "trying to create testrepo again after 1 minute sleep"
-    RESPONSE2=$(curl -u testadmin:testadmin -X POST -H "content-type: application/json" -d '{"name": "testrepo", "description": "test repo", "private": false}' --write-out %{http_code} --silent --output /dev/null https://${GIT_HOSTNAME}/api/v1/admin/users/testadmin/repos --insecure)
-    if [ $? -ne 0 ]; then
-        echo "failed to create testrepo"
-        echo "E2E CANARY TEST - EXIT WITH ERROR"
-        exit 1
-    fi
-
-    if [ ${RESPONSE2} -eq 500 ] || [ ${RESPONSE2} -eq 501 ] || [ ${RESPONSE2} -eq 502 ] || [ ${RESPONSE2} -eq 503 ] || [ ${RESPONSE2} -eq 504 ]; then
-        echo "failed to create testrepo again"
-
-        DESC_POD=$($KUBECTL_CMD describe pod $GOGS_POD_NAME)
-        echo "$DESC_POD"
-
-        $KUBECTL_CMD logs $GOGS_POD_NAME -n default
-        echo
-
-        echo "E2E CANARY TEST - EXIT WITH ERROR"
-        exit 1
-    fi
-fi
-
