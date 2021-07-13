@@ -110,7 +110,3 @@ if [ $? -ne 0 ]; then
 fi
 
 $KUBECTL_CMD get route gogs-svc -n $INSTALL_NAMESPACE -o yaml
-
-# Populate the repo with test data
-
-curl -u testadmin:testadmin -X POST -H "content-type: application/json" -d '{"name": "ztp-ran-manifests", "description": "test repo", "private": false}' --write-out %{http_code} --silent --output /dev/null https://${GIT_HOSTNAME}/api/v1/admin/users/testadmin/repos --insecure
