@@ -1,14 +1,39 @@
 #!/bin/bash
 
-kubeconfig="/root/bm/kubeconfig"
-kubeconfig=$HUB_CONFIG
+kubeconfig=$KUBECONFIG
+APP_DOMAIN="apps.izhang-hub-47-6np2g.dev10.red-chesterfield.com"
+
+while getopts "k:hs?" opt; do
+    case "${opt}" in
+    k)
+        kubeconfig="${OPTARG}"
+        ;;
+    s)
+        echo "runing on scale-lab env"
+        APP_DOMAIN="apps.bm.rdu2.scalelab.redhat.com"
+        ;;
+    h | ? | *)
+        echo
+        echo "$(basename $0) will recreate the gogs-svc route with the generated cret"
+        echo "--cert=server.crt --key=server.key, these files are generate with configuration"
+        echo "from ca.conf and san.ext"
+        echo "-k <kubeconfig path>, to specify your kubeconfig, default is KUBECONFIG"
+        echo "-s, flag will decide if we are running againt basion env or your local env"
+        exit 0
+        ;;
+    esac
+done
 
 KUBECTL_CMD="oc --kubeconfig $kubeconfig --insecure-skip-tls-verify=true"
 INSTALL_NAMESPACE="default"
 
-APP_HOSTNAME="apps.izhang-hub-47-6np2g.dev10.red-chesterfield.com"
-GIT_HOSTNAME="gogs-svc-default.${APP_HOSTNAME}"
-COMMON_NAME="*.${APP_HOSTNAME}"
+echo
+echo "$(basename $0) runs at context: "
+echo "$($KUBECTL_CMD config current-context)"
+
+GIT_HOSTNAME="gogs-svc-default.${APP_DOMAIN}"
+COMMON_NAME="*.${APP_DOMAIN}"
+
 # Inject the real Git hostname into certificate config files
 sed -e "s|__HOSTNAME__|$GIT_HOSTNAME|" ca.conf | sed -e "s|COMMON_NAME|${COMMON_NAME}|" > ca-override.conf
 sed -e "s|__HOSTNAME__|$GIT_HOSTNAME|" san.ext > san-override.ext
@@ -40,4 +65,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-$KUBECTL_CMD get route gogs-svc -n $INSTALL_NAMESPACE -o yaml
+echo
+echo "Route is installed: "
+$KUBECTL_CMD get route gogs-svc -n $INSTALL_NAMESPACE

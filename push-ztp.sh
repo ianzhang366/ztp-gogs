@@ -7,6 +7,24 @@ cd ${cur_dir}
 GIT_HOSTNAME="gogs-svc-default.apps.izhang-hub-47-6np2g.dev10.red-chesterfield.com"
 REPO_NAME="ztp-ran-manifests"
 TARGET_REPO="${cur_dir}/${REPO_NAME}"
+SRC_ZTP_REPO="https://github.com/TheRealHaoLiu/ztp-ran-manifests.git"
+SRC_BRANCH="scale-lab"
+
+while getopts "hs?" opt; do
+    case "${opt}" in
+    s)
+        echo "runing on scale-lab env"
+        GIT_HOSTNAME="gogs-svc-default.apps.bm.rdu2.scalelab.redhat.com"
+        ;;
+    h | ? | *)
+        echo
+        echo "$(basename $0) will push the $SRC_BRANCH branch of $SRC_ZTP_REPO to gogs "
+        echo
+        echo "-s, flag let the script knows your are running againt scale-lab env"
+        exit 0
+        ;;
+    esac
+done
 
 # Create a test Git repository. This creates a repo named testrepo under user testadmin.
 RESPONSE=$(curl -u testadmin:testadmin -X POST -H "content-type: application/json" -d '{"name": "ztp-ran-manifests", "description": "test repo", "private": false}' --write-out %{http_code} --silent --output /dev/null https://${GIT_HOSTNAME}/api/v1/admin/users/testadmin/repos --insecure)
@@ -46,7 +64,7 @@ if [ ${RESPONSE} -eq 500 ] || [ ${RESPONSE} -eq 501 ] || [ ${RESPONSE} -eq 502 ]
     fi
 fi
 
-git clone https://github.com/TheRealHaoLiu/ztp-ran-manifests.git
+git clone $SRC_ZTP_REPO
 
 cd $TARGET_REPO
 
@@ -55,7 +73,7 @@ git remote rm origin-gogs
 git remote add origin-gogs https://${GIT_HOSTNAME}/testadmin/${REPO_NAME}.git
 git remote -v
 
-git checkout scale-lab
-git -c http.sslVerify=false push -u origin-gogs scale-lab:scale-lab
+git checkout $SRC_BRANCH
+git -c http.sslVerify=false push -u origin-gogs $SRC_BRANCH:$SRC_BRANCH
 
 exit 0

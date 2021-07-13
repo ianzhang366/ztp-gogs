@@ -1,23 +1,53 @@
 #!/bin/bash
 
-echo "==== Deploying Gogs Git server with custom certificate ===="
+kubeconfig=$KUBECONFIG
+GOGS_IMAGE="gogs/gogs:0.12.1"
+APP_DOMAIN="apps.izhang-hub-47-6np2g.dev10.red-chesterfield.com"
 
+while getopts "k:hs?" opt; do
+    case "${opt}" in
+    k)
+        kubeconfig="${OPTARG}"
+        ;;
+    s)
+        echo "runing on scale-lab env"
+        GOGS_IMAGE="f36-h21-000-r640.rdu2.scalelab.redhat.com:5000/gogs/gogs:0.12.1"
+        APP_DOMAIN="apps.bm.rdu2.scalelab.redhat.com"
+        ;;
+    h | ? | *)
+        echo
+        echo "$(basename $0) will install gogs as a service on your cluster(defined in kubconfig}"
+        echo "the gogs will be exposed as a route 'gogs-svc' at default namespace."
+        echo
+        echo "Please also run the inject-ca.sh to add the sefl-signed cert to your gogs route"
+        echo "in order to make sure the ArgoCD can work properly"
+        echo
+        echo "The route TLS cert need to be put into ArgoCD Repository certificates"
+        echo "You can copy the routes' cert from OCP console and paste it via the ArgoCD UI,"
+        echo "<argocd_host>/settings/certs"
+        echo
+        echo "-k <kubeconfig path>, to specify your kubeconfig, default is KUBECONFIG"
+        echo "-s, flag let the script knows your are running againt scale-lab env"
+        exit 0
+        ;;
+    esac
+done
+
+echo "==== Deploying Gogs Git server with custom certificate ===="
 cur_dir=$(pwd)
 echo "Current directory is $cur_dir"
 
-kubeconfig="/root/bm/kubeconfig"
-kubeconfig=$HUB_CONFIG
-
 KUBECTL_CMD="oc --kubeconfig $kubeconfig --insecure-skip-tls-verify=true"
 
-GOGS_IMAGE="f36-h21-000-r640.rdu2.scalelab.redhat.com:5000/gogs/gogs:0.12.1"
-GOGS_IMAGE="gogs/gogs:0.12.1"
+echo
+echo "$(basename $0) runs at context: "
+echo "$($KUBECTL_CMD config current-context)"
+echo
 
 OVERRIDE_GOGS="override-gogs.yaml"
 INSTALL_NAMESPACE="default"
 
 # Get the application domain
-APP_DOMAIN="apps.izhang-hub-47-6np2g.dev10.red-chesterfield.com"
 echo "Application domain is $APP_DOMAIN"
 
 GIT_HOSTNAME=gogs-svc-default.$APP_DOMAIN
@@ -95,11 +125,12 @@ echo "$OC_VERSION"
 
 echo "$pod"
 
-DESC_POD=$($KUBECTL_CMD describe pod $GOGS_POD_NAME -n $INSTALL_NAMESPACE)
-echo "$DESC_POD"
+#DESC_POD=$($KUBECTL_CMD describe pod $GOGS_POD_NAME -n $INSTALL_NAMESPACE)
+#echo "$DESC_POD"
+#
+#sleep 10
 
-sleep 10
-
+echo
 echo "Adding testadmin user in Gogs"
 # Run script in Gogs container to add Git admin user
 $KUBECTL_CMD exec $GOGS_POD_NAME -n $INSTALL_NAMESPACE -- /tmp/adduser.sh
@@ -109,4 +140,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-$KUBECTL_CMD get route gogs-svc -n $INSTALL_NAMESPACE -o yaml
+echo
+echo "Route is installed: "
+$KUBECTL_CMD get route gogs-svc -n $INSTALL_NAMESPACE
