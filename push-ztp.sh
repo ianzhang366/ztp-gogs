@@ -64,6 +64,8 @@ if [ ${RESPONSE} -eq 500 ] || [ ${RESPONSE} -eq 501 ] || [ ${RESPONSE} -eq 502 ]
     fi
 fi
 
+rm -rf $TARGET_REPO
+
 git clone $SRC_ZTP_REPO
 
 cd $TARGET_REPO
