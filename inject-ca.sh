@@ -32,6 +32,9 @@ echo "$(basename $0) runs at context: "
 echo "$($KUBECTL_CMD config current-context)"
 
 GIT_HOSTNAME="gogs-svc-default.${APP_DOMAIN}"
+
+ARGOCD_HOSTNAME="openshift-gitops-server-openshift-gitops.${APP_DOMAIN}"
+
 COMMON_NAME="*.${APP_DOMAIN}"
 
 # Inject the real Git hostname into certificate config files
@@ -68,3 +71,12 @@ fi
 echo
 echo "Route is installed: "
 $KUBECTL_CMD get route gogs-svc -n $INSTALL_NAMESPACE
+
+# argocd login
+$KUBECTL_CMD extract secret/openshift-gitops-cluster -n openshift-gitops --confirm
+ARGOCD_PWD=$(cat admin.password)
+argocd login $ARGOCD_HOSTNAME --insecure --username admin --password ${ARGOCD_PWD}
+
+# argocd add gogs cert
+argocd cert rm $GIT_HOSTNAME
+argocd cert add-tls --from ./server.crt $GIT_HOSTNAME
