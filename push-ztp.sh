@@ -78,6 +78,6 @@ git remote -v
 git checkout $SRC_BRANCH
 git -c http.sslVerify=false push -u origin-gogs $SRC_BRANCH:$SRC_BRANCH
 
-git checkout master
+git checkout -b master
 git -c http.sslVerify=false push -u origin-gogs master:master
 exit 0
