@@ -1,0 +1,2 @@
+ztp-ran-manifests https://github.com/TheRealHaoLiu/ztp-ran-manifests.git
+cnf-features-deploy https://github.com/openshift-kni/cnf-features-deploy.git
