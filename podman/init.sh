@@ -7,8 +7,8 @@ GIT_PORT_IPV4=${GIT_PORT_IPV4:-10881}
 
 IP_NETWORK_PODMAN=${IP_NETWORK_PODMAN:-podman6}
 
-DEFULAT_GOGS_USERNAME=${DEFULAT_GOGS_USERNAME:-testadmin}
-DEFULAT_GOGS_PASSWORD=${DEFULAT_GOGS_PASSWORD:-testadmin}
+DEFAULT_GOGS_USERNAME=${DEFAULT_GOGS_USERNAME:-testadmin}
+DEFAULT_GOGS_PASSWORD=${DEFAULT_GOGS_PASSWORD:-testadmin}
 
 if [ ! -f /var/gogs/gogs/conf/app.ini  ]; then
     mkdir -p /var/gogs/gogs/conf/
@@ -45,4 +45,4 @@ podman run -d --name=gogs --network=${IP_NETWORK_PODMAN} -p 10022:22 -p ${GIT_PO
 
 
 # create fist user
-podman exec gogs su git -c "/app/gogs/gogs admin create-user --name ${DEFULAT_GOGS_USERNAME} --password ${DEFULAT_GOGS_PASSWORD} --email ${DEFULAT_GOGS_USERNAME}@redhat.com --admin"
+podman exec gogs su git -c "/app/gogs/gogs admin create-user --name ${DEFAULT_GOGS_USERNAME} --password ${DEFAULT_GOGS_PASSWORD} --email ${DEFAULT_GOGS_USERNAME}@redhat.com --admin"
