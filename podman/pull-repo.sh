@@ -1,7 +1,7 @@
 GIT_HOST=${GIT_HOST:-[fc00:1001::1]}
 GIT_PORT=${GIT_PORT:-10880}
-DEFULAT_GOGS_USERNAME=${DEFULAT_GOGS_USERNAME:-testadmin}
-DEFULAT_GOGS_PASSWORD=${DEFULAT_GOGS_PASSWORD:-testadmin}
+DEFAULT_GOGS_USERNAME=${DEFAULT_GOGS_USERNAME:-testadmin}
+DEFAULT_GOGS_PASSWORD=${DEFAULT_GOGS_PASSWORD:-testadmin}
 
 echo "host: $GIT_HOST:$GIT_PORT"
 while read -r REPO_NAME REPO_URL; do
@@ -14,7 +14,7 @@ while read -r REPO_NAME REPO_URL; do
         git clone $REPO_URL
         pushd $REPO_NAME
         git remote rm origin-gogs
-        git remote add origin-gogs http://${DEFULAT_GOGS_USERNAME}:${DEFULAT_GOGS_PASSWORD}@${GIT_HOST}:${GIT_PORT}/testadmin/${REPO_NAME}.git
+        git remote add origin-gogs http://${DEFAULT_GOGS_USERNAME}:${DEFAULT_GOGS_PASSWORD}@${GIT_HOST}:${GIT_PORT}/testadmin/${REPO_NAME}.git
         git remote -v
         git push -u origin-gogs  --all
         popd
